@@ -1,13 +1,11 @@
-from django.urls import path, include
-from rest_framework import routers
+from django.urls import path
 
 from . import views
 
-router = routers.SimpleRouter()
-
 app_name = 'blog'
-
 urlpatterns = [
-    path('', views.BlogListView.as_view(), name='blog-list'),
-    path('mix/', views.BlogViewMix.as_view(), name='blog-mix'),
+    path('notes/', views.NotesView.as_view(), name='notes'),
+    path('note/<int:note_id>/', views.NoteDetailView.as_view(), name='note'),
+    path('note/add/', views.NoteEditorView.as_view(), name='add'),
+    path('note/<int:note_id>/save/', views.NoteEditorView.as_view(), name='save'),
 ]
