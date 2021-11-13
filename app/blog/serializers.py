@@ -2,6 +2,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Note, Comment
+from rest_framework.serializers import ModelSerializer, Serializer, DecimalField, ListField, ChoiceField
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -90,3 +91,7 @@ class CommentAddSerializer(serializers.ModelSerializer):
         model = Comment
         fields = "__all__"
         read_only_fields = ['date_add', 'author', 'note']  # Только для чтения
+
+
+class QuerySerializer(Serializer):
+    group = ListField(child=ChoiceField(choices=Note.GROUPS), required=False)

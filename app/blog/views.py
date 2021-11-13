@@ -7,7 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 
 from .models import Note, Comment
-from .serializers import NotesSerializer, NoteDetailSerializer, NoteEditorSerializer, CommentAddSerializer
+from .serializers import NotesSerializer, NoteDetailSerializer, NoteEditorSerializer, CommentAddSerializer, QuerySerializer
+from django.db.models import Q
 
 
 class NotesView(APIView):
@@ -16,6 +17,19 @@ class NotesView(APIView):
     def get(self, request):
         """ Получить статьи для блога """
 
+        notes = Note.objects.filter(public=False)
+
+        # Отбор по группам
+        query_params = QuerySerializer(data=request.query_params)
+        if query_params.is_valid():
+            if query_params.data.get('group'):
+                notes = Note.filter(group__in=query_params.data['group'])
+        else:
+            return Response(query_params.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        p1 = Q(group=2)
+        notes = notes.filter(p1)
+
         # Это НЕ оптимизированный запрос
         notes = Note.objects.filter(public=True).order_by('-date_add', 'title')
 
@@ -23,6 +37,8 @@ class NotesView(APIView):
         # https://django.fun/docs/django/ru/3.1/ref/models/querysets/#select-related
         # notes = Note.objects.filter(public=True).order_by('-date_add', 'title').select_related('author')
         # notes = notes.only('id', 'title', 'message', 'date_add', 'author__username')
+
+
 
         # Рассчитать средний рейтинг
         notes = notes.annotate(average_rating=Avg('comments__rating'))
